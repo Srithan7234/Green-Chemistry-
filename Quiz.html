@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Chemistry Quiz</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #d4edda;
+            color: #2c3e50;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #1b4332;
+        }
+        .quiz-container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+        .question {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .options label {
+            display: block;
+            padding: 10px;
+            background: #f8f9fa;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .options input {
+            display: none;
+        }
+        .options label:hover {
+            background: #c3e6cb;
+        }
+        .options label.selected {
+            background: #a3cfbb !important;
+        }
+        #submit {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background: #2d6a4f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #submit:hover {
+            background: #1b4332;
+        }
+        #result {
+            font-size: 22px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        #keepItUp {
+            display: none;
+            margin-top: 20px;
+        }
+        #timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Green Chemistry Quiz</h1>
+    <p id="timer">Time Left: 5:00</p>
+    <div class="quiz-container">
+        <form id="quiz-form">
+            <div id="questions"></div>
+            <button type="button" id="submit">Submit</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <!-- Keep it up GIF -->
+    <div id="keepItUp">
+        <h2>🎉 Keep it up! 🎉</h2>
+        <img src="keep-it-up.gif" alt="Keep it up!" width="300">
+    </div>
+
+    <script>
+        // 20 Unique Questions & Answer Choices
+        const questions = [
+            { q: "What is the goal of Green Chemistry?", a: "Reduce waste and pollution", choices: ["Reduce waste and pollution", "Increase hazardous chemicals", "Use non-renewable resources"] },
+            { q: "Which is a principle of Green Chemistry?", a: "Design for degradation", choices: ["Use more chemicals", "Design for degradation", "Ignore waste management"] },
+            { q: "Which gas causes global warming?", a: "Carbon dioxide", choices: ["Carbon dioxide", "Oxygen", "Nitrogen"] },
+            { q: "Which process is eco-friendly?", a: "Using biodegradable plastics", choices: ["Using biodegradable plastics", "Burning plastics", "Dumping chemicals in rivers"] },
+            { q: "Which gas is responsible for acid rain?", a: "Sulfur dioxide", choices: ["Sulfur dioxide", "Oxygen", "Hydrogen"] },
+            { q: "What is green solvent?", a: "A safer alternative to toxic solvents", choices: ["A safer alternative to toxic solvents", "A harmful industrial waste", "A fossil fuel derivative"] },
+            { q: "Which renewable source is commonly used for energy?", a: "Solar power", choices: ["Coal", "Solar power", "Petroleum"] },
+            { q: "What does Green Chemistry promote?", a: "Sustainable and eco-friendly production", choices: ["More pollution", "Sustainable and eco-friendly production", "Increase in chemical waste"] },
+            { q: "What is a major benefit of Green Chemistry?", a: "Less environmental damage", choices: ["More pollution", "Less environmental damage", "More plastic waste"] },
+            { q: "Which method is sustainable?", a: "Recycling waste materials", choices: ["Recycling waste materials", "Burning plastics", "Using harmful chemicals"] }
+        ];
+
+        // Display Questions
+        const questionContainer = document.getElementById("questions");
+        questions.forEach((item, index) => {
+            let optionsHtml = item.choices.map(choice => `
+                <label>
+                    <input type="radio" name="q${index}" value="${choice}"> ${choice}
+                </label>
+            `).join("");
+
+            questionContainer.innerHTML += `
+                <div class="question">${index + 1}. ${item.q}</div>
+                <div class="options" id="q${index}">${optionsHtml}</div>
+            `;
+        });
+
+        // Add event listeners to change color on selection
+        document.querySelectorAll('.options input').forEach(input => {
+            input.addEventListener('change', function() {
+                let parent = this.closest('.options');
+                parent.querySelectorAll('label').forEach(label => label.classList.remove('selected'));
+                this.parentElement.classList.add('selected');
+            });
+        });
+
+        // Timer Functionality
+        let timeLeft = 300; // 5 minutes
+        function startTimer() {
+            let timer = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    document.getElementById("submit").click(); // Auto-submit
+                } else {
+                    let minutes = Math.floor(timeLeft / 60);
+                    let seconds = timeLeft % 60;
+                    document.getElementById("timer").textContent = `Time Left: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+        startTimer();
+
+        // Submit Quiz
+        document.getElementById("submit").addEventListener("click", function() {
+            let score = 0;
+            let totalQuestions = questions.length;
+
+            questions.forEach((item, index) => {
+                let selected = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selected && selected.value === item.a) {
+                    score++;
+                }
+            });
+
+            let percentage = (score / totalQuestions) * 100;
+            let resultText = `You scored ${score} / ${totalQuestions} (${percentage.toFixed(2)}%)`;
+
+            // Show correct answers
+            let answersText = "<br><b>Correct Answers:</b><br>";
+            questions.forEach((item, index) => {
+                answersText += `${index + 1}. ${item.q} - <b>${item.a}</b><br>`;
+            });
+
+            document.getElementById("result").innerHTML = resultText + answersText;
+
+            // Show "Keep it up!" GIF if score is ≥ 80%
+            if (percentage >= 80) {
+                document.getElementById("keepItUp").style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>
